@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sockerlandet 🍰 - Receptsökare</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="main-header">
+    <h1>✨ Välkommen till Sockerlandet ✨</h1>
+    <h2>Vad är du sugen på att baka idag?</h2>
+</header>
+
+<main class="container">
+    <section class="controls">
+        <input type="text" id="recipe-search" placeholder="Sök efter en drömdessert, t.ex. 'Lemon', 'Cake' eller 'Cookie'...">
+        <button id="search-button">Hitta Bakverk</button>
+    </section>
+
+    <section id="recipe-results" class="recipe-grid">
+        <h2>Sök efter något ljuvligt och låt magin börja!</h2>
+    </section>
+</main>
+
+<div id="recipe-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <div id="modal-details">
+        </div>
+    </div>
+</div>
+
+<script src="script.js" defer></script>
+</body>
+</html>
