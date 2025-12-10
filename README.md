@@ -41,4 +41,4 @@ Använd sökfältet för att filtrera listan i realtid, och klicka på ett kort 
 visa den fullständiga detaljvyn.
 
 Kontakt & Inlämning
-Inlämning av: Shams Ali Ramadan | Datum: 11/12 (Vecka 50)
+Inlämning av: Shams Ali Ramadan | Datum: 11/12 (Vecka 50) 

@@ -1,4 +1,3 @@
-
 /* FÄRGPALETT & VARIER: Jag valde pastellfärger (rosa, lila, blå, gul) för en elegant look. */
 :root {
     --color-light-pink: #FFD1DC;
@@ -13,8 +12,10 @@
 /* BODY: Använder en mjuk gradient för bakgrunden (linear-gradient) för att ge ett elegant intryck. */
 body {
     color: var(--color-text);
-    background: linear-gradient(135deg, var(--color-light-purple) 0%, var(--color-light-blue) 40%, var(--color-light-yellow) 100%);
+    'background': linear-gradient(135deg, var(--color-light-purple) 0%, var(--color-light-blue) 40%, var(--color-light-yellow) 100%);
     background-attachment: fixed;
+    line-height: 1.6;
+    font-family: 'Georgia', serif;
 }
 
 /* HEADER: Rundade hörn och mjuk skugga för att visuellt separera headern från body-gradienten. */
@@ -22,8 +23,20 @@ body {
     background-color: var(--color-light-pink);
     color: var(--color-dark-accent);
     padding: 40px 20px;
+    text-align: center;
     box-shadow: 0 5px 15px var(--color-shadow);
     border-radius: 0 0 25px 25px;
+}
+
+.main-header h1 {
+    font-size: 2.8em;
+    font-weight: 300;
+}
+
+.main-header h2 {
+    font-size: 1.4em;
+    margin-top: 10px;
+    color: var(--color-text);
 }
 
 /* CONTROLS: Jag använder Flexbox (display: flex) för att säkerställa att sökfält och knapp anpassas snyggt bredvid varandra (krav: Flexbox encouraged). */
@@ -38,8 +51,28 @@ body {
     box-shadow: 0 4px 12px var(--color-shadow);
 }
 
+.controls input {
+    padding: 15px;
+    border: 1px solid var(--color-light-purple);
+    border-radius: 8px;
+    flex-grow: 1;
+    font-size: 1em;
+    background-color: white;
+}
+
 .controls button {
+    padding: 15px 30px;
     background-color: var(--color-dark-accent); /* Använder kontrastfärgen för bättre synlighet. */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-weight: bold;
+}
+
+.controls button:hover {
+    background-color: #9C1445;
 }
 
 /* RECIPE GRID: Jag använder CSS Grid (display: grid) för att hantera receptkortens responsiva layout (krav: Grid encouraged). */
@@ -53,15 +86,64 @@ body {
 .recipe-card {
     background-color: white;
     border-radius: 12px;
+    overflow: hidden;
     /* Starkare, mjukare skugga och övergång (transform: translateY) för en elegant "lyft"-effekt vid hover. */
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s;
+    cursor: pointer;
     border: 1px solid var(--color-light-pink);
 }
 
+.recipe-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 30px var(--color-dark-accent), 0 0 15px var(--color-light-blue);
+}
+
+.recipe-card img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+}
+
+.recipe-info {
+    padding: 20px;
+    text-align: center;
+}
+
+.recipe-info h3 {
+    margin-top: 0;
+    color: var(--color-dark-accent);
+    font-size: 1.4em;
+}
+
 /* MODAL: Stilar för detaljvyn. Jag använder en mjuk gradient även i popup-fönstret. */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 100;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
 .modal-content {
     background: linear-gradient(to top, var(--color-light-yellow), white);
+    margin: 5% auto;
+    padding: 30px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 650px;
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
     border: 3px solid var(--color-light-pink);
+}
+
+.close-button {
+    color: var(--color-dark-accent);
+    float: right;
+    font-size: 32px;
+    font-weight: bold;
+    cursor: pointer;
 }
