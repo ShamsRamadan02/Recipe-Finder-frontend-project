@@ -12,7 +12,7 @@
 /* BODY: Använder en mjuk gradient för bakgrunden (linear-gradient) för att ge ett elegant intryck. */
 body {
     color: var(--color-text);
-    'background': linear-gradient(135deg, var(--color-light-purple) 0%, var(--color-light-blue) 40%, var(--color-light-yellow) 100%);
+    background: linear-gradient(135deg, var(--color-light-purple) 0%, var(--color-light-blue) 40%, var(--color-light-yellow) 100%);
     background-attachment: fixed;
     line-height: 1.6;
     font-family: 'Georgia', serif;
@@ -146,4 +146,22 @@ body {
     font-size: 32px;
     font-weight: bold;
     cursor: pointer;
+}
+/* Media Query för att förbättra responsivitet på små skärmar (Krav: Responsive layout) */
+@media (max-width: 650px) {
+    /* För små skärmar vill jag att sökfältet och knappen ska staplas på varandra (från Flexbox) */
+    .controls {
+        flex-direction: column;
+    }
+
+    /* Gör knapparna full bredd när de staplas */
+    .controls button {
+        width: 100%;
+    }
+
+    /* Minska marginalen på containern för att maximera utrymmet på mobilen */
+    .container {
+        margin: 20px 0;
+        padding: 0 10px;
+    }
 }
