@@ -54,13 +54,28 @@ async function getRecipeDetails(id) {
     return data.meals ? data.meals[0] : null;
 }
 
+function listIngredients(details) {
+    let list = '';
+    // Loopar från 1 till 20 (max antal ingredienser i API:et)
+    for (let i = 1; i <= 20; i++) {
+        const ingredient = details[`strIngredient${i}`];
+        const measure = details[`strMeasure${i}`];
+
+        // Kollar om ingrediensen existerar och inte är tom
+        if (ingredient && ingredient.trim() !== '') {
+            list += `<li>${measure} ${ingredient}</li>`;
+        }
+    }
+    return list;
+}
+
 // -----------------------------------------------------------
 // NYCKELFUNKTION: filterAndDisplayRecipes (VG-Krav: Interaktiv Kontroll)
 // -----------------------------------------------------------
 function filterAndDisplayRecipes(searchTerm) {
     const term = searchTerm.toLowerCase();
 
-    // ÅTGÄRDAT: Varningen "Local variable nameMatch is redundant" fixas genom att returnera matchningen direkt.
+    // Varningen "Local variable nameMatch is redundant" fixas genom att returnera matchningen direkt.
     const filteredMeals = allDessertRecipes.filter(meal => {
         if (!meal) return false;
 
@@ -88,7 +103,7 @@ function displayRecipes(meals) {
         card.className = 'recipe-card';
         card.dataset.id = meal.idMeal;
 
-        // ÅTGÄRDAT: Varningen "Promise returned from showModal is ignored" ignoreras här då det är en event listener.
+        // Varningen "Promise returned from showModal is ignored" ignoreras här då det är en event listener.
         card.addEventListener('click', () => {
             showModal(meal.idMeal);
         });
@@ -116,13 +131,29 @@ async function showModal(id) {
     const details = await getRecipeDetails(id);
 
     if (details) {
-        let instructions = details.strInstructions.split('\r\n').filter(p => p.trim() !== '');
+        // Hanterar rader, radbrytningar och punkter för att korrekt separera stegen.
+        let instructions = details.strInstructions
+            .split(/\r\n|\n|\./)
+
+            .filter(p => p.trim().length > 1 && !/^\d+\.|^\s*-/.test(p.trim()));
+
+        // Om den nya listan är väldigt kort, använd en fallback
+        if (instructions.length < 2 && details.strInstructions.length > 50) {
+            instructions = details.strInstructions.split('.').filter(p => p.trim().length > 1);
+        }
 
         modalDetails.innerHTML = `
             <h2>${details.strMeal}</h2>
             <img src="${details.strMealThumb}" alt="${details.strMeal}" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 8px;">
-            <p style="margin-top: 15px;">**Kategori:** ${details.strCategory || 'Bakverk'}</p>
-            <p>**Kök:** ${details.strArea || 'Hemlagat'}</p>
+            <h4 style="margin-top: 15px;">Kategori:</h4>
+            <p style="margin-top: 15px;">${details.strCategory || 'Bakverk'}</p>
+            <h4 style="margin-top: 15px;">Kök:</h4>
+            <p>${details.strArea || 'Hemlagat'}</p>
+            
+            <h4 style="margin-top: 20px;">Ingredienser:</h4>
+            <ul style="padding-left: 20px; text-align: left;">
+            ${listIngredients(details)}
+            </ul>
             
             <h4 style="margin-top: 20px;">Instruktioner:</h4>
             <ol style="padding-left: 20px; text-align: left;">
@@ -134,7 +165,6 @@ async function showModal(id) {
         modalDetails.innerHTML = '<h3>Kunde inte ladda detaljer för detta recept.</h3>';
     }
 }
-
 
 // -----------------------------------------------------------
 // EVENT LISTENERS (Ansluter VG-kravet till UI)
