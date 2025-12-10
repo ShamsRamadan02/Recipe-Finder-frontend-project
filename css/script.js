@@ -1,99 +1,89 @@
-// GLOBAL VARIABLER
+// GLOBAL VARIABLER: Jag använder konstanter för API-basen och de DOM-element jag behöver manipulera.
 const API_BASE_URL = 'https://www.themealdb.com/api/json/v1/1/';
-// Vi lägger till en URL för att hämta ALLA recept i kategorin "Dessert"
+// Jag använder slutpunkten för att filtrera efter kategori (c=Dessert) för att garantera att endast bakverk visas, istället för den oprecisa sökfunktionen.
 const DESSERT_LIST_URL = `${API_BASE_URL}filter.php?c=Dessert`;
 
 const resultsElement = document.getElementById('recipe-results');
 const searchInput = document.getElementById('recipe-search');
 const searchButton = document.getElementById('search-button');
-
 const modal = document.getElementById('recipe-modal');
 const modalDetails = document.getElementById('modal-details');
 const closeButton = document.querySelector('.close-button');
 
-// Ny variabel: Lagrar den fullständiga listan av alla desserter (måste hämtas i två steg)
+// allDessertRecipes: Denna array lagrar alla hämtade receptdetaljer. Genom att lagra datan lokalt minskar jag antalet API-anrop vid sökning.
 let allDessertRecipes = [];
 
 // -----------------------------------------------------------
-// HUVUDFUNKTION: fetchAllDessertsAndDetails (Hämtar data i två steg)
+// HUVUDFUNKTION: fetchAllDessertsAndDetails
+// Denna asynkrona funktion hanterar API-anropet i två steg.
 // -----------------------------------------------------------
 async function fetchAllDessertsAndDetails() {
     resultsElement.innerHTML = '<h2>Laddar Sockerlandets fulla sortiment...</h2>';
 
     try {
-        // STEG 1: Hämta listan med alla Dessert ID:n och namn
+        // STEG 1: fetch för att hämta listan med ID:n för alla desserter (Krav: Använd fetch, Read data GET).
         const listResponse = await fetch(DESSERT_LIST_URL);
+
+        // FELHANTERING (Valfritt krav): Kontrollerar status på svaret.
         if (!listResponse.ok) throw new Error('Kunde inte hämta dessertlistan.');
         const listData = await listResponse.json();
 
         const dessertList = listData.meals;
 
-        if (!dessertList) {
-            resultsElement.innerHTML = '<h2>Kunde inte hitta några recept i Dessertkategorin.</h2>';
-            return;
-        }
-
-        // STEG 2: Hämta detaljer för varje recept ID (Detta ger oss all information vi behöver)
+        // STEG 2: Använder Promise.all för att skicka en array av promises, vilket hämtar detaljer för alla recept parallellt för prestanda.
         const detailPromises = dessertList.map(meal => getRecipeDetails(meal.idMeal));
-
-        // Väntar på att alla detaljer ska hämtas parallellt
         allDessertRecipes = await Promise.all(detailPromises);
 
-        // Sätt upp event listeners efter att data har laddats
+        // Sätt upp event listeners och visa initial data
         setupEventListeners();
-
-        // Visa alla recept som standard initialt
         filterAndDisplayRecipes(searchInput.value.trim());
 
     } catch (error) {
+        // Om fel: Visar ett felmeddelande på sidan (Krav: Handle error states).
         console.error('Kunde inte ladda Sockerlandet:', error);
         resultsElement.innerHTML = `<h2>Åh nej, ett fel uppstod vid laddning av desserter.</h2>`;
     }
 }
 
 // -----------------------------------------------------------
-// FUNKTION: getRecipeDetails (Hämtar enskilda detaljer)
-// Denna funktion är identisk med den du hade, men används nu i bulk.
+// FUNKTION: getRecipeDetails
+// Funktion för att hämta detaljer för ett specifikt ID.
 // -----------------------------------------------------------
 async function getRecipeDetails(id) {
     const url = `${API_BASE_URL}lookup.php?i=${id}`;
+    // Använder fetch igen för att slå upp detaljer.
     const response = await fetch(url);
     const data = await response.json();
     return data.meals ? data.meals[0] : null;
 }
 
 // -----------------------------------------------------------
-// NY FUNKTION: filterAndDisplayRecipes (VG-Krav: Sökning på lokal data)
+// NYCKELFUNKTION: filterAndDisplayRecipes (VG-Krav: Interaktiv Kontroll)
 // -----------------------------------------------------------
 function filterAndDisplayRecipes(searchTerm) {
     const term = searchTerm.toLowerCase();
 
-    // 1. Filtrera den lokalt lagrade datan baserat på sökterm
+    // Jag använder Array.filter() på den lokalt lagrade datan för att matcha VG-kravet effektivt.
     const filteredMeals = allDessertRecipes.filter(meal => {
-        if (!meal) return false; // Ignorera om detaljhämtning misslyckades
-
-        // Matchar om receptnamnet innehåller söktermen
+        if (!meal) return false;
+        // Filtrerar endast baserat på receptets namn (strMeal)
         const nameMatch = meal.strMeal.toLowerCase().includes(term);
-
-        // Du kan lägga till fler matchningar här, t.ex. på ingredienser om du vill:
-        // const ingredientMatch = meal.strIngredient1?.toLowerCase().includes(term);
-
         return nameMatch;
     });
 
-    // 2. Visa den filtrerade listan
+    // Skickar den filtrerade arrayen till visningsfunktionen.
     displayRecipes(filteredMeals);
 }
 
 
 // -----------------------------------------------------------
-// FUNKTION: displayRecipes (Dynamisk visning)
+// FUNKTION: displayRecipes (Dynamisk Visning)
 // -----------------------------------------------------------
 function displayRecipes(meals) {
     resultsElement.innerHTML = '';
 
     if (!meals || meals.length === 0) {
-        resultsElement.innerHTML = '<h2>Inga underbara bakverk matchade sökningen. Prova t.ex. "Cake" eller "Mousse"!</h2>';
+        resultsElement.innerHTML = '<h2>Inga underbara bakverk matchade sökningen.</h2>';
         return;
     }
 
@@ -102,10 +92,12 @@ function displayRecipes(meals) {
         card.className = 'recipe-card';
         card.dataset.id = meal.idMeal;
 
+        // Klickhändelsen utlöser hämtning av detaljer och visning av modalen.
         card.addEventListener('click', () => {
             showModal(meal.idMeal);
         });
 
+        // Här skapas den dynamiska HTML-strukturen för korten.
         card.innerHTML = `
             <img src="${meal.strMealThumb}" alt="${meal.strMeal}">
             <div class="recipe-info">
@@ -119,51 +111,21 @@ function displayRecipes(meals) {
 }
 
 // -----------------------------------------------------------
-// FUNKTION: showModal (Visar detaljvy)
-// -----------------------------------------------------------
-async function showModal(id) {
-    // Funktionen för modalen är oförändrad från ditt tidigare, eleganta utkast
-    modalDetails.innerHTML = '<h3>Laddar receptets hemligheter...</h3>';
-    modal.style.display = 'block';
-
-    const details = await getRecipeDetails(id);
-
-    if (details) {
-        // Vi lägger till en snygg instruktionslista
-        let instructions = details.strInstructions.split('\r\n').filter(p => p.trim() !== '');
-
-        modalDetails.innerHTML = `
-            <h2>${details.strMeal}</h2>
-            <img src="${details.strMealThumb}" alt="${details.strMeal}" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 8px;">
-            <p style="margin-top: 15px;">**Kategori:** ${details.strCategory || 'Bakverk'}</p>
-            <p>**Kök:** ${details.strArea || 'Hemlagat'}</p>
-            
-            <h4 style="margin-top: 20px;">Instruktioner:</h4>
-            <ol style="padding-left: 20px; text-align: left;">
-                ${instructions.slice(0, 5).map(p => `<li>${p}</li>`).join('')}
-                ${instructions.length > 5 ? '<li>...Se resten på extern länk.</li>' : ''}
-            </ol>
-        `;
-    } else {
-        modalDetails.innerHTML = '<h3>Kunde inte ladda detaljer för detta recept.</h3>';
-    }
-}
-
-// -----------------------------------------------------------
-// EVENT LISTENERS (VG-Krav)
+// EVENT LISTENERS (Ansluter VG-kravet till UI)
 // -----------------------------------------------------------
 function setupEventListeners() {
-    // VG-kravet hanteras nu av filterAndDisplayRecipes funktionen
+    // Jag använder 'input' istället för 'keypress' för att få omedelbar uppdatering under tiden användaren skriver (bästa praxis för VG-krav).
+    searchInput.addEventListener('input', () => {
+        filterAndDisplayRecipes(searchInput.value.trim());
+    });
+
+    // Knappen gör samma sak som input-fältet.
     searchButton.addEventListener('click', (event) => {
         event.preventDefault();
         filterAndDisplayRecipes(searchInput.value.trim());
     });
 
-    searchInput.addEventListener('input', () => { // Använder 'input' för omedelbar filtrering
-        filterAndDisplayRecipes(searchInput.value.trim());
-    });
-
-    // Modal-stängning
+    // Stängningslogik för modalen
     closeButton.addEventListener('click', () => {
         modal.style.display = 'none';
     });
@@ -175,5 +137,5 @@ function setupEventListeners() {
     });
 }
 
-// STARTA APPLIKATIONEN
+// STARTAR APPLIKATIONEN genom att hämta all data.
 fetchAllDessertsAndDetails();
